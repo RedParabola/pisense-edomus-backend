@@ -1,0 +1,7 @@
+express guide carlos azaustre?
+install node, express, python-shell
+https://github.com/extrabacon/python-shell
+
+ejecutar config/server.js
+sudo node server.js
+Porque si no no tiene acceso a la GPIO
