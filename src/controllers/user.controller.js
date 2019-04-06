@@ -4,7 +4,7 @@ var User = require('../models/user.model.js'),
 
 function createToken(user) {
   return jwt.sign({ id: user.id, email: user.email }, config.JWT_SECRET, {
-    expiresIn: 200 // 86400 expires in 24 hours
+    expiresIn: config.TOKEN_EXPIRE_TIME
   });
 }
 
