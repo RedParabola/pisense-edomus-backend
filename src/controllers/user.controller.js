@@ -9,48 +9,62 @@ function createToken(user) {
 }
 
 exports.registerUser = (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).json({ 'msg': 'You need to send both email and password' });
-  }
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (err) {
-      return res.status(400).json({ 'msg': err });
-    }
-    if (user) {
-      return res.status(400).json({ 'msg': 'The user already exists' });
-    }
-    let newUser = User(req.body);
-    newUser.save((err, user) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    console.log('FAILED POST registerUser ' + email);
+    res.status(400).send({message: 'You need to send both email and password'});
+  } else {
+    User.findOne({ email }, (err, user) => {
       if (err) {
-        return res.status(400).json({ 'msg': err });
+        console.log('FAILED POST registerUser ' + email);
+        res.status(500).send(err.message);
+      } else if (user) {
+        console.log('FAILED POST registerUser ' + email);
+        res.status(400).send({message: 'User ' + email + ' already exists'});
+      } else {
+        let newUser = new User(req.body);
+        newUser.save((err, user) => {
+          if (err) {
+            console.log('FAILED POST registerUser ' + email);
+            res.status(500).send(err.message);
+          } else {
+            console.log('SUCCESS POST registerUser ' + email);
+            res.status(200).jsonp({message: 'User ' + email + ' registered sucessfully'});
+          }
+        });
       }
-      return res.status(201).json(user);
     });
-  });
+  }
 };
 
 exports.loginUser = (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).send({ 'msg': 'You need to send email and password' });
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    console.log('FAILED POST loginUser ' + email);
+    res.status(400).send({message: 'You need to send both email and password'});
+  } else {
+    User.findOne({ email }, (err, user) => {
+      if (err) {
+        console.log('FAILED POST loginUser ' + email);
+        res.status(500).send(err.message);
+      } else if (!user) {
+        console.log('FAILED POST loginUser ' + email);
+        res.status(400).send({message: 'User ' + email + ' does not exist'});
+      } else {
+        user.comparePassword(password, (err, isMatch) => {
+          if (isMatch && !err) {
+            console.log('SUCCESS POST loginUser ' + email);
+            res.status(200).jsonp({email: email, token: createToken(user)});
+          } else {
+            console.log('FAILED POST loginUser ' + email);
+            res.status(400).send({message: 'The email and password don\'t match.'});
+          }
+        });
+      }
+
+    });
   }
 
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (err) {
-      return res.status(400).send({ 'msg': err });
-    }
-
-    if (!user) {
-      return res.status(400).json({ 'msg': 'The user does not exist' });
-    }
-
-    user.comparePassword(req.body.password, (err, isMatch) => {
-      if (isMatch && !err) {
-        return res.status(200).json({
-          token: createToken(user)
-        });
-      } else {
-        return res.status(400).json({ msg: 'The email and password don\'t match.' });
-      }
-    });
-  });
 };
