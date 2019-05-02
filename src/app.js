@@ -8,7 +8,8 @@ const express = require('express'),
 // Files
 const mongodb = require('./providers/dbs/mongo.db.js'),
       router = require('./routes/router.js'),
-      passportMiddleware = require('./middleware/passport.middleware');
+      passportMiddleware = require('./middleware/passport.middleware'),
+      usbDevices = require('./providers/usb-devices/usb-devices.js');
 
 // let corsOptions = {
 //   origin: 'http://example.com',
@@ -36,5 +37,8 @@ mongodb.connect();
 
 // Router
 router.setupRouting(express, app);
+
+// Devices detection
+usbDevices.initListening();
 
 module.exports = app;
