@@ -1,0 +1,13 @@
+{"_id":{"$oid":"5bf1cc0732f9ec0e14d63138"},"id":"room123","customName":"MollitoRoom","type":"BEDROOM","mainThingsId":{"LIGHT":"light2","none":"","AC":"thing693092","HUMIDIFIER":null},"temperature":19,"humidity":34,"things":["light2","thing693092","thing476358","thing443927"]}
+{"_id":{"$oid":"5bf1cce079c8ebccce5de011"},"id":"room0","customName":"Piquitera","type":"BEDROOM","mainThingsId":{"none":"","LIGHT":null},"temperature":23,"humidity":15,"things":[]}
+{"_id":{"$oid":"5bf1cd5479c8ebccce5de01b"},"id":"abcd","customName":"Pococina","type":"KITCHEN","mainThingsId":{"LIGHT":"light1","none":""},"temperature":25,"humidity":40,"things":["light1"]}
+{"_id":{"$oid":"5c162a2680f33c1ec84ac234"},"things":[],"id":"room324160","customName":"Basement","type":"BASEMENT","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162a3b80f33c1ec84ac235"},"things":[],"id":"room166628","customName":"Big Bath","type":"BATHROOM","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162a4880f33c1ec84ac236"},"things":[],"id":"room889539","customName":"KidBath","type":"BATHROOM","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162a5780f33c1ec84ac237"},"things":[],"id":"room438209","customName":"Living Room","type":"LOUNGE","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162a6780f33c1ec84ac238"},"things":["ac1"],"id":"room108929","customName":"Office","type":"OFFICE","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162b6613ab0a37642342a4"},"things":[],"id":"room131308","customName":"Backyard","type":"BACKYARD","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162b7813ab0a37642342a5"},"things":[],"id":"room503341","customName":"Porch","type":"PORCH","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162bb413ab0a37642342a6"},"things":[],"id":"room141341","customName":"RedRum","type":"OTHER","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5c162be713ab0a37642342a7"},"things":[],"id":"room351828","customName":"Kids Room","type":"BEDROOM","mainThingsId":{"none":""},"__v":0}
+{"_id":{"$oid":"5ca28689c5caeb2d3cde27cc"},"things":[],"id":"room615758","customName":"My other connection test","type":"OTHER","mainThingsId":{"none":""},"__v":0}
