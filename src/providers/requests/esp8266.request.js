@@ -6,7 +6,7 @@ const request = require('request');
  */
 function _request() {
 
-  request.get('http://192.168.1.16/temp')
+  request.get('http://192.168.4.16/temp')
   .on('response', function(response) {
     console.log(response.success) // 200
     console.log(response.Temperature) // 200
