@@ -1,10 +1,14 @@
 const usbDetect = require('usb-detection');
+const esp8266 = require('../requests/esp8266.request');
 
 function _initListening() {
   usbDetect.startMonitoring();
   
   // Detect add/insert
-  usbDetect.on('add', function(device) { console.log('add', device); });
+  usbDetect.on('add', function(device) {
+    console.log('add', device);
+    esp8266.request();
+  });
   usbDetect.on('add:vid', function(device) { console.log('add', device); });
   usbDetect.on('add:vid:pid', function(device) { console.log('add', device); });
   
