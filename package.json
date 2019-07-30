@@ -16,6 +16,7 @@
     "python-shell": "^1.0.6",
     "request": "^2.88.0",
     "run-rs": "^0.4.0",
+    "shelljs": "^0.8.3",
     "usb-detection": "^4.1.0"
   },
   "devDependencies": {},
