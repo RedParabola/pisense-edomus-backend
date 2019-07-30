@@ -1,28 +1,55 @@
-const mongoose = require('mongoose'),
+const boardHelper = require('../helpers/board.helper.js'),
+      scriptService = require('../providers/scripts/script.service.js'),
       Thing = require('../models/thing.model.js'),
+      Board = require('../models/board.model.js'),
       Room = require('../models/room.model.js');
 
 //POST '/' - Link a thing to a room.
 const linkRoom = function (req, res) {
-  const thingId = req.body.thingId;
-  const roomId = req.body.roomId;
-  Thing.update({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, room) {
-    if (err) {
-      console.log('FAILED GET linkRoom');
-      console.log(err);
-      res.status(500).send(err.message);
-    } else {
-      Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
-        if (err) {
-          console.log('FAILED GET linkRoom');
-          console.log(err);
-          res.status(500).send(err.message);
-        } else {
-          console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId);
-          res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId });
-        }
-      });
-    }
+  const {thingId, roomId, boardSN, boardPin} = req.body;
+  const reject = function(err) {
+    console.log(err);
+    res.status(500).send(err.message);
+  }
+
+  _prepareBoardInfo(boardSN, boardPin, thingId, function (board) {
+    // Call to compose the scripts needed for the board
+    scriptService.composeBoardScripts(board, function (err, scriptsRef) {
+      if (err) {
+        reject(err);
+      } else {
+        // Call to flash the composed scripts in the board
+        scriptService.flashBoardScripts(scriptsRef, function (err, success) {
+          if (err) {
+            reject(err);
+          } else {
+            // If all that worked, then finish this
+            Thing.update({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, thing) {
+              if (err) {
+                console.log('FAILED POST linkRoom Thing.update');
+                reject(err);
+              } else {
+                Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
+                  if (err) {
+                    console.log('FAILED POST linkRoom Room.update');
+                    reject(err.message);
+                  } else {
+                    board.save(function (err, board) {
+                      if (err) {
+                        reject('FAILED POST linkRoom board.save ' + board.serialNumber);
+                      } else {
+                        console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId + ' through board ' + board.serialNumber);
+                        res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId + ' through board ' + board.serialNumber});
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
   });
 };
 
@@ -110,6 +137,34 @@ const flagAsMainThing = function (req, res) {
 
   (!oldMainThingId) ? callbackFlagMethod() : Thing.update({ id: oldMainThingId }, { $set: { flaggedAsMain: false } }, callbackFlagMethod);
 }
+
+
+/***********************************************************************************************/
+/***********************************************************************************************/
+
+  // With boardSN, get the stored board info
+  const _prepareBoardInfo = function(boardSN, boardPin, thingId, callback) {
+    Board.findOne({ serialNumber: boardSN }, function (err, storedBoard) {
+      let board;
+      // If already existent, modify locally the board. If none, create a new one.
+      if (storedBoard) {
+        board = storedBoard;
+      } else {
+        console.log('PROCESS GET linkRoom _prepareBoardInfo Board.findOne not found');
+        board = new Board({
+          id: 'random',
+          model: 'model1',
+          serialNumber: boardSN
+        });
+      }
+      // Modify the board with the new info: add thing to the board in given pin boardPin
+      board = boardHelper.addThingToPin(board, boardPin, thingId);
+      callback(board);
+    });
+  }
+
+/***********************************************************************************************/
+/***********************************************************************************************/
 
 const linkController = {
   linkRoom,
