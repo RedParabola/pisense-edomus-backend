@@ -3,5 +3,5 @@ const app = require('./src/app.js');
 
 // Start server
 app.listen(SERVER_CONFIG.SERVER_PORT, function() {
-  console.log('Node server listening on http://localhost:' + SERVER_CONFIG.SERVER_PORT);
+  console.log('Node server listening on http://' + SERVER_CONFIG.SERVER_ADDRESS + ':' + SERVER_CONFIG.SERVER_PORT);
 });

@@ -3,13 +3,16 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       passport = require('passport'),
       methodOverride = require('method-override'),
-      cors = require('cors');
+      cors = require('cors'),
 
 // Files
-const mongodb = require('./providers/dbs/mongo.db.js'),
+      mongodb = require('./providers/dbs/mongo.db.js'),
       router = require('./routes/router.js'),
       passportMiddleware = require('./middleware/passport.middleware.js'),
-      usbService = require('./providers/usb/usb.service.js');
+      usbService = require('./providers/usb/usb.service.js'),
+      mqttService = require('./providers/mqtt/mqtt.service.js'),
+      SERVER_CONFIG = require('../config/server.config.js');
+
 
 // let corsOptions = {
 //   origin: 'http://example.com',
@@ -41,4 +44,34 @@ router.setupRouting(express, app);
 // Devices detection
 usbService.initListening();
 
+
+
+
+const existingMQTTSubscriptions = [
+  {
+    thing: 'salon/dht11',
+    measure: 'temp',
+    callback: function() { console.log('Callback for thing salon/dht11/temp'); },
+  },
+  {
+    thing: 'cocina/dht11',
+    measure: 'temp',
+    callback: function() { console.log('Callback for thing cocina/dht11/temp'); },
+  },
+  {
+    thing: 'salon/pir',
+    measure: 'movement',
+    callback: function() { console.log('Callback for thing salon/pir/movement'); },
+  },
+  {
+    thing: 'salon/test',
+    measure: 'msg',
+    callback: function() { console.log('Callback for thing salon/test/msg'); },
+  },
+];
+
+
+
+
+mqttService.initializeClient(SERVER_CONFIG.SERVER_ADDRESS, existingMQTTSubscriptions);
 module.exports = app;
