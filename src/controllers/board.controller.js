@@ -18,7 +18,11 @@ const getAllBoards = function (req, res) {
 const getUSBConnectedBoard = function (req, res) {
   let board = usbService.getCurrentConnectedUSB();
   if (board) {
-    board = new Board({id: 'connectedBoard', model: 'model1', serialNumber:(board && board.serialNumber) || 'connectedSN'});
+    board = new Board({
+      id: board.id || 'genericBoardId',
+      model: board.model || 'genericBoardModel',
+      serialNumber: board.serialNumber || 'genericBoardSN'
+    });
     console.log('SUCCESS GET getUSBConnectedBoard');
     res.status(200).jsonp(board);
   } else {

@@ -1,5 +1,5 @@
 const Measure = require('../models/measure.model.js'),
-      Python = require('../providers/scripts/python.script.js');
+      Python = require('../providers/scripts/python.service.js');
 
 //GET - Return the live measures
 const getLiveMeasures = function(req, res) {

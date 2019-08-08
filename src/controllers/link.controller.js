@@ -1,55 +1,50 @@
-const boardHelper = require('../helpers/board.helper.js'),
-      scriptService = require('../providers/scripts/script.service.js'),
+const coreController = require('./core.controller.js'),
+      shellScriptService = require('../providers/scripts/shell.service.js'),
+      mqttService = require('../providers/mqtt/mqtt.service.js'),
       Thing = require('../models/thing.model.js'),
-      Board = require('../models/board.model.js'),
       Room = require('../models/room.model.js');
 
 //POST '/' - Link a thing to a room.
 const linkRoom = function (req, res) {
-  const {thingId, roomId, boardSN, boardPin} = req.body;
+  const {thingId, thingModel, roomId, boardModelId, boardPin} = req.body;
   const reject = function(err) {
     console.log(err);
-    res.status(500).send(err.message);
+    res.status(500).send(err);
   }
-
-  _prepareBoardInfo(boardSN, boardPin, thingId, function (board) {
-    // Call to compose the scripts needed for the board
-    scriptService.composeBoardScripts(board, function (err, scriptsRef) {
-      if (err) {
-        reject(err);
-      } else {
-        // Call to flash the composed scripts in the board
-        scriptService.flashBoardScripts(scriptsRef, function (err, success) {
-          if (err) {
-            reject(err);
-          } else {
-            // If all that worked, then finish this
-            Thing.update({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, thing) {
-              if (err) {
-                console.log('FAILED POST linkRoom Thing.update');
-                reject(err);
-              } else {
-                Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
-                  if (err) {
-                    console.log('FAILED POST linkRoom Room.update');
-                    reject(err.message);
-                  } else {
-                    board.save(function (err, board) {
-                      if (err) {
-                        reject('FAILED POST linkRoom board.save ' + board.serialNumber);
-                      } else {
-                        console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId + ' through board ' + board.serialNumber);
-                        res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId + ' through board ' + board.serialNumber});
-                      }
-                    });
-                  }
-                });
-              }
-            });
-          }
-        });
-      }
-    });
+  // Call to compile the needed scripts and upload them to the board
+  shellScriptService.compileAndUploadToBoard(thingId, thingModel, boardModelId, boardPin, function (err) {
+    if (err) {
+      reject(err);
+    } else {
+      // If all that worked, then finish this
+      Thing.findOneAndUpdate({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, thing) {
+        if (err) {
+          console.log('FAILED POST linkRoom Thing.update');
+          reject(err.message);
+        } else {
+          const subscriptionData = coreController.generateSubscriptionData(thing);
+          mqttService.addSubscription(
+            subscriptionData.answer.thing,
+            subscriptionData.answer.endpoint,
+            subscriptionData.answer.callback
+          );
+          mqttService.addSubscription(
+            subscriptionData.status.thing,
+            subscriptionData.status.endpoint,
+            subscriptionData.status.callback
+          );
+          Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
+            if (err) {
+              console.log('FAILED POST linkRoom Room.update');
+              reject(err.message);
+            } else {
+              console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId);
+              res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId});
+            }
+          });
+        }
+      });
+    }
   });
 };
 
@@ -142,26 +137,6 @@ const flagAsMainThing = function (req, res) {
 /***********************************************************************************************/
 /***********************************************************************************************/
 
-  // With boardSN, get the stored board info
-  const _prepareBoardInfo = function(boardSN, boardPin, thingId, callback) {
-    Board.findOne({ serialNumber: boardSN }, function (err, storedBoard) {
-      let board;
-      // If already existent, modify locally the board. If none, create a new one.
-      if (storedBoard) {
-        board = storedBoard;
-      } else {
-        console.log('PROCESS GET linkRoom _prepareBoardInfo Board.findOne not found');
-        board = new Board({
-          id: 'random',
-          model: 'model1',
-          serialNumber: boardSN
-        });
-      }
-      // Modify the board with the new info: add thing to the board in given pin boardPin
-      board = boardHelper.addThingToPin(board, boardPin, thingId);
-      callback(board);
-    });
-  }
 
 /***********************************************************************************************/
 /***********************************************************************************************/
