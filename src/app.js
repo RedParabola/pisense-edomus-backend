@@ -3,13 +3,15 @@ const express = require('express'),
       bodyParser = require('body-parser'),
       passport = require('passport'),
       methodOverride = require('method-override'),
-      cors = require('cors');
+      cors = require('cors'),
 
 // Files
-const mongodb = require('./providers/dbs/mongo.db.js'),
+      mongodb = require('./providers/dbs/mongo.db.js'),
       router = require('./routes/router.js'),
-      passportMiddleware = require('./middleware/passport.middleware'),
-      usbDevices = require('./providers/usb-devices/usb-devices.js');
+      passportMiddleware = require('./middleware/passport.middleware.js'),
+      usbService = require('./providers/usb/usb.service.js'),
+      coreController = require('./controllers/core.controller.js');
+
 
 // let corsOptions = {
 //   origin: 'http://example.com',
@@ -33,12 +35,16 @@ app.use(passport.initialize());
 passport.use(passportMiddleware);
 
 // Database
-mongodb.connect();
+coreController.prepareCoreInstances();
+mongodb.connect(function() {
+  // Prepare stored devices communication flow
+  coreController.setupCoreMonitors();
+});
+
+// Devices detection
+usbService.initListening();
 
 // Router
 router.setupRouting(express, app);
-
-// Devices detection
-usbDevices.initListening();
 
 module.exports = app;

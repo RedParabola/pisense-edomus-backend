@@ -1,6 +1,5 @@
 const express = require('express'),
       router = express.Router(),
-      passport = require('passport'),
       userCtrl = require('../controllers/user.controller.js'),
       ROUTER_CONFIG = require('../../config/router.config.js');
 

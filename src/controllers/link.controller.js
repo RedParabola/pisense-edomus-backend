@@ -1,25 +1,47 @@
-const mongoose = require('mongoose'),
+const thingHelper = require('../helpers/thing.helper.js'),
+      shellScriptService = require('../providers/scripts/shell.service.js'),
+      mqttService = require('../providers/mqtt/mqtt.service.js'),
       Thing = require('../models/thing.model.js'),
       Room = require('../models/room.model.js');
 
 //POST '/' - Link a thing to a room.
 const linkRoom = function (req, res) {
-  const thingId = req.body.thingId;
-  const roomId = req.body.roomId;
-  Thing.update({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, room) {
+  const {thingId, thingModel, roomId, boardModelId, boardPin} = req.body;
+  const reject = function(err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
+  // Call to compile the needed scripts and upload them to the board
+  shellScriptService.compileAndUploadToBoard(thingId, thingModel, boardModelId, boardPin, function (err) {
     if (err) {
-      console.log('FAILED GET linkRoom');
-      console.log(err);
-      res.status(500).send(err.message);
+      reject(err);
     } else {
-      Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
+      // If all that worked, then finish this
+      Thing.findOneAndUpdate({ id: thingId }, { $set: { linkedRoomId: roomId } }, function (err, thing) {
         if (err) {
-          console.log('FAILED GET linkRoom');
-          console.log(err);
-          res.status(500).send(err.message);
+          console.log('FAILED POST linkRoom Thing.update');
+          reject(err.message);
         } else {
-          console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId);
-          res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId });
+          const subscriptionData = thingHelper.generateSubscriptionData(thing);
+          mqttService.addSubscription(
+            subscriptionData.answer.thingId,
+            subscriptionData.answer.endpoint,
+            subscriptionData.answer.callback
+          );
+          mqttService.addSubscription(
+            subscriptionData.status.thingId,
+            subscriptionData.status.endpoint,
+            subscriptionData.status.callback
+          );
+          Room.update({ id: roomId }, { $push: { things: thingId } }, function (err, room) {
+            if (err) {
+              console.log('FAILED POST linkRoom Room.update');
+              reject(err.message);
+            } else {
+              console.log('SUCCESS POST linkRoom thing ' + thingId + ' to room ' + roomId);
+              res.status(200).jsonp({ message: 'Thing ' + thingId + ' sucessfully linked to room ' + roomId});
+            }
+          });
         }
       });
     }
@@ -110,6 +132,14 @@ const flagAsMainThing = function (req, res) {
 
   (!oldMainThingId) ? callbackFlagMethod() : Thing.update({ id: oldMainThingId }, { $set: { flaggedAsMain: false } }, callbackFlagMethod);
 }
+
+
+/***********************************************************************************************/
+/***********************************************************************************************/
+
+
+/***********************************************************************************************/
+/***********************************************************************************************/
 
 const linkController = {
   linkRoom,

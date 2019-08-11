@@ -4,6 +4,7 @@ const ROUTER_CONFIG = {
   EP_GLOBAL: {
     USER:     '/api/user',
     THINGS:   '/api/thing',
+    BOARDS:   '/api/board',
     ROOMS:    '/api/room',
     LINKS:    '/api/link',
     MEASURES: '/api/measure',
@@ -16,7 +17,11 @@ const ROUTER_CONFIG = {
     BASE:    '',
     BY_ID:   '/:id',
     RENAME:  '/rename/:id',
-    COMMAND: '/command/:id'
+    COMMAND: '/command/:id',
+  },
+  EP_BOARDS: {
+    BASE:    '',
+    DETECT:  '/detect',
   },
   EP_ROOMS: {
     BASE:   '',
@@ -25,7 +30,7 @@ const ROUTER_CONFIG = {
   },
   EP_LINKS: {
     BASE: '',
-    MAIN: '/main'
+    MAIN: '/main',
   },
   EP_MEASURES: {
     LIVE:     '/live',

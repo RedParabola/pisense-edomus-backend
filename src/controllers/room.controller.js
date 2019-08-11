@@ -1,5 +1,47 @@
-const Room = require('../models/room.model.js');
+const Room = require('../models/room.model.js'),
+  thingController = require('./thing.controller.js'),
+  thingHelper = require('../helpers/thing.helper.js');
 
+const initializeRooms = function () {
+  // TODO. Still nothing needed.
+}
+
+const roomDaemon = function () {
+  Room.find({}, function (err, rooms) {
+    if (!err) {
+      rooms.forEach(room => {
+        thingController.getThingsByRoom(room.id, function(thingList) {
+          // Calculate average temperature and humidity
+          // First get dht11 sensors
+          if (thingList.length) {
+            let dht11Sensors = [];
+            let mq235Sensors = [];
+            thingList.forEach(thing => {
+              !!(thing.model === 'dht11') && dht11Sensors.push(thing);
+              !!(thing.model === 'mq235') && mq235Sensors.push(thing);
+            });
+            let dht11AvgInfo = thingHelper.getDHT11AvgInfo(dht11Sensors);
+            let mq235AvgInfo = thingHelper.getMQ235AvgInfo(mq235Sensors);
+            let sensorMeasures = Object.assign(
+              room.sensorMeasures || {},
+              dht11AvgInfo,
+              mq235AvgInfo,
+            );
+            Room.update({ id: room.id }, { $set: { sensorMeasures } }, function (err) {
+              if (err) {
+                // console.log(err);
+                console.log(`FAILED roomDaemon room.save for room ${room.id}`);
+              } else {
+                console.log(`SUCCESS roomDaemon room.save for room ${room.id}`);
+              }
+            });
+          }
+        });
+      });
+    }
+  });
+}
+  
 //GET - Return all rooms in the DB
 const getAllRooms = function (req, res) {
   Room.find({}, '-_id -__v', function (err, rooms) {
@@ -80,6 +122,8 @@ const renameRoom = function (req, res) {
 };
 
 const roomController = {
+  initializeRooms,
+  roomDaemon,
   getAllRooms,
   getRoomById,
   addRoom,

@@ -1,4 +1,4 @@
-const PythonShell = require('python-shell'),
+const pythonShell = require('python-shell'),
       SERVER_CONFIG = require('../../../config/server.config.js'),
       PY_SCRIPTS = require('../../constants/python.constants.js');
 
@@ -11,10 +11,10 @@ let options = {
 };
 
 exports.getLiveMeasures = function(callback) {
-  PythonShell.run(PY_SCRIPTS.GETLIVEMEASURES, options, callback);
+  pythonShell.run(PY_SCRIPTS.GETLIVEMEASURES, options, callback);
 };
 
 exports.setHumidifier = function(power, callback) {
   //COMO ENVÍO EL ENCENDIDO O APAGADO?
-  PythonShell.run(PY_SCRIPTS.SETHUMIDIFIER, options, callback);
+  pythonShell.run(PY_SCRIPTS.SETHUMIDIFIER, options, callback);
 };

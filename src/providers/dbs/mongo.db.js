@@ -4,7 +4,7 @@ const mongoose = require('mongoose'),
 /**
  * Connection to DB
  */
-function _connect() {
+function _connect(successCallback) {
   mongoose.Promise = global.Promise;
   if(SERVER_CONFIG.MONGODB_URL.indexOf('replicaSet') > - 1) {
     mongoose.connect(SERVER_CONFIG.MONGODB_URL, SERVER_CONFIG.MONGODB_OPTIONS);
@@ -20,6 +20,7 @@ function _connect() {
   });
   mongoose.connection.once('open', function() {
     console.log('Successfully connected to database: ' + SERVER_CONFIG.MONGODB_URL);
+    successCallback();
   });
 }
 
