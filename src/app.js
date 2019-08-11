@@ -35,9 +35,10 @@ app.use(passport.initialize());
 passport.use(passportMiddleware);
 
 // Database
+coreController.prepareCoreInstances();
 mongodb.connect(function() {
   // Prepare stored devices communication flow
-  coreController.launchStoredSubscriptions();
+  coreController.setupCoreMonitors();
 });
 
 // Devices detection

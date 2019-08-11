@@ -1,13 +1,15 @@
-const processRequest = function (request) {
-  console.log(`Callback for thing ${thing.id}/request, running humidifier processRequest`);
+const processRequest = function (thingId, request) {
+  console.log(`processRequest for humidifier ${thingId}/request`);
+  const requestJSON = request;
+  mqttService.publish(thingId, 'request', JSON.stringify(requestJSON));
 };
 
-const processStatus = function (status) {
-  console.log(`Callback for thing ${thing.id}/status, running humidifier processStatus`);
+const processStatus = function (thingId, message) {
+  console.log(`processStatus for humidifier ${thingId}/status`);
 };
 
-const processAnswer = function (answer) {
-  console.log(`Callback for thing ${thing.id}/answer, running humidifier processAnswer`);
+const processAnswer = function (thingId, message) {
+  console.log(`processAnswer for humidifier ${thingId}/answer`);
 };
 
 const humidifierController = {

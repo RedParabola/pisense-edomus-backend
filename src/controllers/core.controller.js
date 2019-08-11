@@ -1,15 +1,30 @@
 const Thing = require('../models/thing.model.js'),
   mqttService = require('../providers/mqtt/mqtt.service.js'),
-  SERVER_CONFIG = require('../../config/server.config.js');
+  SERVER_CONFIG = require('../../config/server.config.js'),
+  thingHelper = require('../helpers/thing.helper.js'),
+  roomController = require('./room.controller.js'),
+  thingController = require('./thing.controller.js');
 
-// Retrieve 
-const launchStoredSubscriptions = function () {
+const prepareCoreInstances = function () {
+  console.log('CORE prepareCoreInstances');
+  roomController.initializeRooms();
+  thingController.initializeThings();
+}
+
+const setupCoreMonitors = function () {
+  console.log('CORE setupCoreMonitors');
+  _launchStoredSubscriptions();
+  _releaseDaemons();
+}
+
+const _launchStoredSubscriptions = function () {
+  console.log('CORE _launchStoredSubscriptions');
   const existingMQTTSubscriptions = [];
   Thing.find({}, '-_id, -__v', function (err, things) {
     if (!err) {
       things.forEach(thing => {
         if (thing.linkedRoomId) {
-          const subscriptionData = generateSubscriptionData(thing);
+          const subscriptionData = thingHelper.generateSubscriptionData(thing);
           existingMQTTSubscriptions.push(subscriptionData.answer);
           existingMQTTSubscriptions.push(subscriptionData.status);
         }
@@ -19,32 +34,17 @@ const launchStoredSubscriptions = function () {
   });
 };
 
-const generateSubscriptionData = function(thing) {
-  const thingControllerInstance = getThingControllerInstance(thing.type);
-  return subscriptionData = {
-    answer: {
-      thing: thing.id,
-      endpoint: 'answer',
-      callback: thingControllerInstance && thingControllerInstance.processAnswer,
-    },
-    status: {
-      thing: thing.id,
-      endpoint: 'status',
-      callback: thingControllerInstance && thingControllerInstance.processStatus
-    }
-  };
-}
-
-const getThingControllerInstance = function(thingType) {
-  thingType = thingType.toLowerCase();
-  const ThingControllerInstance = require(`./thing-actions/${thingType}.controller.js`);
-  return ThingControllerInstance;
+const _releaseDaemons = function () {
+  console.log('CORE _releaseDaemons');
+  setInterval(() => {
+    roomController.roomDaemon();
+    thingController.thingDaemon();
+  }, 5000);
 }
 
 const coreController = {
-  launchStoredSubscriptions,
-  generateSubscriptionData,
-  getThingControllerInstance,
+  prepareCoreInstances,
+  setupCoreMonitors
 };
 
 module.exports = coreController;

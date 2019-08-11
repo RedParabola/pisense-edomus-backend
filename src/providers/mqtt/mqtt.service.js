@@ -19,15 +19,15 @@ const stopClient = function() {
   console.log('MQTT stopClient');
 }
 
-const addSubscription = function(thing, endpoint, callback, successCallback, errorCallback) {
-  const topic =_formTopic(thing, endpoint);
+const addSubscription = function(thingId, endpoint, callback, successCallback, errorCallback) {
+  const topic =_formTopic(thingId, endpoint);
   _subscribeTopic(topic, function success() {
     // Add to list of subscriptions _mqttSubscriptions
-    const index = _findSubscriptionIndex(thing, endpoint);
+    const index = _findSubscriptionIndex(thingId, endpoint);
     if (index > -1) {
       console.log('MQTT SUCCESS addSubscription subscription to ' + topic + ' already added');
     } else {
-      _mqttSubscriptions.push({thing, endpoint, callback});
+      _mqttSubscriptions.push({thingId, endpoint, callback});
       console.log('MQTT SUCCESS addSubscription to ' + topic);
     }
     !!successCallback && successCallback();
@@ -38,11 +38,11 @@ const addSubscription = function(thing, endpoint, callback, successCallback, err
   });
 }
 
-const removeSubscription = function(thing, endpoint, successCallback, errorCallback) {
-  const topic =_formTopic(thing, endpoint);
+const removeSubscription = function(thingId, endpoint, successCallback, errorCallback) {
+  const topic =_formTopic(thingId, endpoint);
   _unsubscribeTopic(topic, function success() {
     // Remove from list of subscriptions _mqttSubscriptions
-    const index = _findSubscriptionIndex(thing, endpoint);
+    const index = _findSubscriptionIndex(thingId, endpoint);
     if (index > -1) {
       _mqttSubscriptions.splice(index, 1);
       console.log('MQTT SUCCESS removeSubscription to ' + topic);
@@ -57,9 +57,10 @@ const removeSubscription = function(thing, endpoint, successCallback, errorCallb
   });
 }
 
-const publish = function(thing, successCallback, errorCallback) {
-  const topic =_formTopic(thing, 'request');
-  _publishTopic(topic, function success() {
+const publish = function(thingId, endpoint, message, successCallback, errorCallback) {
+  const topic =_formTopic(thingId, endpoint);
+  console.log('MQTT publish on ' + topic);
+  _publishTopic(topic, message, function success() {
     console.log('MQTT SUCCESS publish on ' + topic);
     !!successCallback && successCallback();
   }, function error(errMessage) {
@@ -81,7 +82,7 @@ const _loadSubscriptions = function(existingSubscriptions, successCallback) {
   }
   existingSubscriptions.forEach(subscription => {
     addSubscription(
-      subscription.thing,
+      subscription.thingId,
       subscription.endpoint,
       subscription.callback,
       processSubscription, processSubscription
@@ -109,25 +110,25 @@ const _publishTopic = function(topic, message, successCallback, errorCallback) {
 
 const _initMessageListener = function() {
   client.on('message', function (topic, payload) {
-    // Separate topic into thing and endpoint
+    // Separate topic into thingId and endpoint
     const splitTopic = topic.split('/');
-    const thing = !!splitTopic && splitTopic[0];
+    const thingId = !!splitTopic && splitTopic[0];
     const endpoint = !!splitTopic && splitTopic[1];
     // Convert message from Buffer to string
     const message = payload.toString();
-    _processMessage(thing, endpoint, message);
+    _processMessage(thingId, endpoint, message);
   });
 }
 
-const _formTopic = function (thing, endpoint) {
-  return thing + '/' + endpoint;
+const _formTopic = function (thingId, endpoint) {
+  return thingId + '/' + endpoint;
 }
 
-const _findSubscriptionIndex = function(thing, endpoint) {
+const _findSubscriptionIndex = function(thingId, endpoint) {
   let indexOfSubscription = -1;
   for (let i = 0, len = _mqttSubscriptions.length; i < len; i++) {
     const subscription = _mqttSubscriptions[i];
-    if (subscription.thing === thing && subscription.endpoint === endpoint) {
+    if (subscription.thingId === thingId && subscription.endpoint === endpoint) {
       indexOfSubscription = i;
       break;
     }
@@ -135,13 +136,13 @@ const _findSubscriptionIndex = function(thing, endpoint) {
   return indexOfSubscription;
 }
 
-const _processMessage = function(thing, endpoint, message) {
-  const index = _findSubscriptionIndex(thing, endpoint);
+const _processMessage = function(thingId, endpoint, message) {
+  const index = _findSubscriptionIndex(thingId, endpoint);
   if (index > -1) {
     const subscription = _mqttSubscriptions[index];
-    console.log('MQTT SUCCESS _processMessage. Callback ' + _formTopic(thing, endpoint));
+    console.log('MQTT SUCCESS _processMessage. Callback ' + _formTopic(thingId, endpoint));
     console.log(message);
-    subscription.callback(message);
+    subscription.callback(thingId, message);
   } else {
     console.log('MQTT FAILED _processMessage not found in _mqttSubscriptions.');
   }

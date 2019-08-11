@@ -1,5 +1,4 @@
-const BOARDS = {
-  TYPE_ENUM : [
+const AVAILABLE_BOARDS = [
     // 'esp8266:esp8266:gen4iod',
     // 'esp8266:esp8266:huzzah',
     // 'esp8266:esp8266:wifi_slot',
@@ -30,7 +29,6 @@ const BOARDS = {
     // 'esp8266:esp8266:wifiduino',
     // 'esp8266:esp8266:wifinfo',
     // 'esp8266:esp8266:cw01',
-  ]
-};
+  ];
 
-module.exports = BOARDS;
+module.exports = AVAILABLE_BOARDS;

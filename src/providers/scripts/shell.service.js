@@ -1,22 +1,19 @@
 var shell = require('shelljs');
 
 const compileAndUploadToBoard = function (thingId, thingModel, boardModelId, boardPin, callback) {
-  let err, scriptString;
+  let scriptString;
   //scriptString = 'bash sleep_example.sh';
   scriptString = `./sketchgenerator ${thingModel} ${boardPin} ${thingId} ${boardModelId}`;
   _execAsync(scriptString, function(data) {
     if (data === 'Completed') {
-      console.log('execution of bash sleep_example.sh ended');
-      callback(err);
-    } else if (data === 'Error') {
-      err = 'FAILURE compileAndUploadToBoard';
+      console.log('Success execution of sketchgenerator ended');
+      callback();
+    } else if (data.indexOf('Error') !== -1) {
+      callback(data);
     }
   }, function(error) {
-    console.log('Failed execution of bash sleep_example.sh');
-    if (error === 'Error') {
-      err = 'FAILURE compileAndUploadToBoard';
-    }
-    callback(err);
+    console.log('Failed execution of sketchgenerator ended');
+    callback(error);
   });
 }
 

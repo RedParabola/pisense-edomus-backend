@@ -1,13 +1,15 @@
-const processRequest = function (request) {
-  console.log(`Callback for thing ${thing.id}/request, running ac processRequest`);
+const processRequest = function (thingId, request) {
+  console.log(`processRequest for ac ${thingId}/request`);
+  const requestJSON = request;
+  mqttService.publish(thingId, 'request', JSON.stringify(requestJSON));
 };
 
-const processStatus = function (status) {
-  console.log(`Callback for thing ${thing.id}/status, running ac processStatus`);
+const processStatus = function (thingId, message) {
+  console.log(`processStatus for ac ${thingId}/status`);
 };
 
-const processAnswer = function (answer) {
-  console.log(`Callback for thing ${thing.id}/answer, running ac processAnswer`);
+const processAnswer = function (thingId, message) {
+  console.log(`processAnswer for ac ${thingId}/answer`);
 };
 
 const acController = {

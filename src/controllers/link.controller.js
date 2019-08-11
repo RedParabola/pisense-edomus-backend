@@ -1,4 +1,4 @@
-const coreController = require('./core.controller.js'),
+const thingHelper = require('../helpers/thing.helper.js'),
       shellScriptService = require('../providers/scripts/shell.service.js'),
       mqttService = require('../providers/mqtt/mqtt.service.js'),
       Thing = require('../models/thing.model.js'),
@@ -22,14 +22,14 @@ const linkRoom = function (req, res) {
           console.log('FAILED POST linkRoom Thing.update');
           reject(err.message);
         } else {
-          const subscriptionData = coreController.generateSubscriptionData(thing);
+          const subscriptionData = thingHelper.generateSubscriptionData(thing);
           mqttService.addSubscription(
-            subscriptionData.answer.thing,
+            subscriptionData.answer.thingId,
             subscriptionData.answer.endpoint,
             subscriptionData.answer.callback
           );
           mqttService.addSubscription(
-            subscriptionData.status.thing,
+            subscriptionData.status.thingId,
             subscriptionData.status.endpoint,
             subscriptionData.status.callback
           );

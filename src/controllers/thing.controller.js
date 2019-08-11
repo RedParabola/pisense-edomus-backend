@@ -1,6 +1,19 @@
 const Thing = require('../models/thing.model.js'),
-  coreController = require('./core.controller'),
   thingHelper = require('../helpers/thing.helper.js');
+
+const initializeThings = function () {
+  // TODO. Still nothing needed.
+}
+
+const getThingsByRoom = function (linkedRoomId, successCallback) {
+  Thing.find({ linkedRoomId }, function (err, things) {
+    err ? successCallback([]) : successCallback(things);
+  });
+}
+
+const thingDaemon = function () {
+  // TODO. Still nothing needed.
+}
 
 //GET '/' - Return all things in the DB
 const getAllThings = function (req, res) {
@@ -90,7 +103,7 @@ const processCommand = function (req, res) {
       console.log('FAILED PUT processCommand Thing.findOne ' + req.params.id);
       res.status(500).send(err.message);
     } else {
-      const thingControllerInstance = coreController.getThingControllerInstance(thing.type);
+      const thingControllerInstance = thingHelper.getThingControllerInstance(thing.type);
       thingControllerInstance && thingControllerInstance.processRequest(commandString, requestedValue);
       console.log('SUCCESS PUT processCommand ' + req.params.id);
       res.status(200).jsonp(thing);
@@ -158,6 +171,14 @@ const getMockModel = function (type) {
         }
       };
       break;
+    case 'SENSOR':
+      returned = {
+        powerStatus: 'ON',
+        sensorMeasures: {
+          temperature: 22,
+          humidity: 22
+        }
+      }
     default:
       break;
   }
@@ -165,6 +186,9 @@ const getMockModel = function (type) {
 }
 
 const thingController = {
+  initializeThings,
+  getThingsByRoom,
+  thingDaemon,
   addThing,
   getAllThings,
   getThingById,
