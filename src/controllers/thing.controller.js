@@ -31,13 +31,13 @@ const getAllThings = function (req, res) {
 //POST '/' - Insert a new thing in the DB
 const addThing = function (req, res) {
   const generatedId = Math.floor(Math.random() * (999999 - 100000)) + 100000;
-  const thingProperties = getMockModel(req.body.type); //Mock should be retrieved depending on the model, not the type
+  const thingProperties = thingHelper.getModelStructure(req.body.type, req.body.model);
   let thing = new Thing({
     id: 'thing' + generatedId,
     customName: req.body.customName + ' ' + generatedId,
     type: req.body.type,
     model: req.body.model,
-    typeProperties: thingProperties// req.body.typeProperties
+    typeProperties: thingProperties
   });
   thing.save(function (err, thing) {
     if (err) {
@@ -122,68 +122,6 @@ const processCommand = function (req, res) {
   }
   res.status(200).jsonp(commandAnswer);
 };
-
-// Mock properties depending on thing. Should be retrieved depending on model from real model list
-const getMockModel = function (type) {
-  var returned;
-  switch (type) {
-    case 'LIGHT':
-      returned = {
-        powerType: 'BINARY',
-        powerStatus: 'OFF'
-      };
-      break;
-    case 'AC':
-      returned = {
-        powerStatus: 'OFF',
-        intensity: {
-          currentValue: 3,
-          defaultValue: 1,
-          rangeMin: 1,
-          rangeMax: 5,
-          step: 1
-        },
-        temperature: {
-          currentValue: 22,
-          defaultValue: 24,
-          rangeMin: 14,
-          rangeMax: 34,
-          step: 1
-        }
-      };
-      break;
-    case 'HUMIDIFIER':
-      returned = {
-        powerStatus: 'OFF',
-        intensity: {
-          currentValue: 3,
-          defaultValue: 1,
-          rangeMin: 1,
-          rangeMax: 5,
-          step: 1
-        },
-        waterLevel: {
-          currentValue: 22,
-          defaultValue: 24,
-          rangeMin: 14,
-          rangeMax: 34,
-          step: 1
-        }
-      };
-      break;
-    case 'SENSOR':
-      returned = {
-        powerStatus: 'ON',
-        sensorMeasures: {
-          temperature: 22,
-          humidity: 22
-        }
-      }
-    default:
-      break;
-  }
-  return returned;
-}
 
 const thingController = {
   initializeThings,

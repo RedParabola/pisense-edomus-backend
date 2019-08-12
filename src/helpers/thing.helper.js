@@ -25,6 +25,83 @@ const generateSubscriptionData = function(thing) {
   };
 }
 
+// Mock properties depending on thing. Should be retrieved depending on model from real model list
+const getModelStructure = function (type, model) {
+  var returned;
+  switch (type) {
+    case 'LIGHT':
+      returned = {
+        powerType: 'BINARY',
+        powerStatus: 'OFF'
+      };
+      break;
+    case 'AC':
+      returned = {
+        powerStatus: 'OFF',
+        intensity: {
+          currentValue: 3,
+          defaultValue: 1,
+          rangeMin: 1,
+          rangeMax: 5,
+          step: 1
+        },
+        temperature: {
+          currentValue: 22,
+          defaultValue: 24,
+          rangeMin: 14,
+          rangeMax: 34,
+          step: 1
+        }
+      };
+      break;
+    case 'HUMIDIFIER':
+      returned = {
+        powerStatus: 'OFF',
+        intensity: {
+          currentValue: 3,
+          defaultValue: 1,
+          rangeMin: 1,
+          rangeMax: 5,
+          step: 1
+        },
+        waterLevel: {
+          currentValue: 22,
+          defaultValue: 24,
+          rangeMin: 14,
+          rangeMax: 34,
+          step: 1
+        }
+      };
+      break;
+    case 'SENSOR':
+      switch (model) {
+        case 'dht11':
+          returned = {
+            powerStatus: 'ON',
+            sensorMeasures: {
+              temperature: 20,
+              humidity: 20
+            }
+          }
+          break;
+        case 'mq135':
+          returned = {
+            powerStatus: 'ON',
+            sensorMeasures: {
+              airQuality: true
+            }
+          }
+          break;
+        default:
+          break;
+      }
+
+    default:
+      break;
+  }
+  return returned;
+}
+
 const getDHT11AvgInfo = function(dht11Sensors) {
   let avgTemperature,
     avgHumidity;
@@ -59,26 +136,32 @@ const getDHT11AvgInfo = function(dht11Sensors) {
   };
 }
 
-const getMQ235AvgInfo = function(mq235Sensors) {
-  let avgCO2;
-  if (mq235Sensors.length) {
-    let co2MeasuresCounter = 0,
-      addedCO2 = 0;
-    mq235Sensors.forEach(sensor => {
+const getMQ135AvgInfo = function(mq135Sensors) {
+  let totalAirQuality,
+  warningSensors = [];
+  if (mq135Sensors.length) {
+    let oneSensorRunningOk,
+      allSensorsOk = true;
+    mq135Sensors.forEach(sensor => {
       if (sensor.typeProperties && sensor.typeProperties.sensorMeasures) {
-        const {co2} = sensor.sensorMeasures;
-        if (co2) {
-          addedCO2 += co2;
-          co2MeasuresCounter++;
+        const {airQuality} = sensor.typeProperties.sensorMeasures;
+        if (airQuality !== undefined && airQuality !== null) {
+          // If here, then the sensor has a value
+          oneSensorRunningOk = true;
+          if (!airQuality) {
+            allSensorsOk = false;
+            warningSensors.push(sensor.customName);
+          }
         }
       }
     });
-    if (co2MeasuresCounter > 0) {
-      avgCO2 = addedCO2/co2MeasuresCounter;
+    if (oneSensorRunningOk) {
+      totalAirQuality = allSensorsOk;
     }
   }
   return {
-    co2: avgCO2,
+    airQuality: totalAirQuality,
+    warningSensors,
   };
 }
 
@@ -86,8 +169,9 @@ const thingHelper = {
   translateCommand,
   getThingControllerInstance,
   generateSubscriptionData,
+  getModelStructure,
   getDHT11AvgInfo,
-  getMQ235AvgInfo
+  getMQ135AvgInfo
 };
 
 module.exports = thingHelper;

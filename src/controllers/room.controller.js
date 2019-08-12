@@ -15,17 +15,17 @@ const roomDaemon = function () {
           // First get dht11 sensors
           if (thingList.length) {
             let dht11Sensors = [];
-            let mq235Sensors = [];
+            let mq135Sensors = [];
             thingList.forEach(thing => {
               !!(thing.model === 'dht11') && dht11Sensors.push(thing);
-              !!(thing.model === 'mq235') && mq235Sensors.push(thing);
+              !!(thing.model === 'mq135') && mq135Sensors.push(thing);
             });
             let dht11AvgInfo = thingHelper.getDHT11AvgInfo(dht11Sensors);
-            let mq235AvgInfo = thingHelper.getMQ235AvgInfo(mq235Sensors);
+            let mq135AvgInfo = thingHelper.getMQ135AvgInfo(mq135Sensors);
             let sensorMeasures = Object.assign(
               room.sensorMeasures || {},
               dht11AvgInfo,
-              mq235AvgInfo,
+              mq135AvgInfo,
             );
             Room.update({ id: room.id }, { $set: { sensorMeasures } }, function (err) {
               if (err) {

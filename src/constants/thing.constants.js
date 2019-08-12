@@ -39,7 +39,7 @@ const THINGS = {
       ],
       SENSOR: [
         {model: "DHT11", id:"dht11"},
-        {model: "MQ235", id:"mq235"},
+        {model: "MQ135", id:"mq135"},
       ]
     }
   };
