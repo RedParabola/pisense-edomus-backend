@@ -82,6 +82,8 @@ const unlinkRoom = function (req, res) {
               console.log(err);
               res.status(500).send(err.message);
             } else {
+              mqttService.removeSubscription(thingId, 'status');
+              mqttService.removeSubscription(thingId, 'answer');
               console.log('SUCCESS DELETE unlinkRoom ' + thingId);
               res.status(200).jsonp({ message: 'Thing ' + thingId + ' unlinked sucessfully from room ' + roomId });
             }
@@ -130,7 +132,8 @@ const flagAsMainThing = function (req, res) {
     }
   };
 
-  (!oldMainThingId) ? callbackFlagMethod() : Thing.update({ id: oldMainThingId }, { $set: { flaggedAsMain: false } }, callbackFlagMethod);
+  (!oldMainThingId) ? callbackFlagMethod() :
+    Thing.update({ id: oldMainThingId }, { $set: { flaggedAsMain: false } }, callbackFlagMethod);
 }
 
 
