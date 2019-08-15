@@ -1,7 +1,7 @@
-const processRequest = function (thingId, request) {
-  console.log(`processRequest for humidifier ${thingId}/request`);
+const processRequest = function (thing, request) {
+  console.log(`processRequest for humidifier ${thing.id}/request`);
   const requestJSON = request;
-  mqttService.publish(thingId, 'request', JSON.stringify(requestJSON));
+  mqttService.publish(thing.id, 'request', JSON.stringify(requestJSON));
 };
 
 const processStatus = function (thingId, message) {

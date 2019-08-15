@@ -1,35 +1,17 @@
-mqttService = require('../../providers/mqtt/mqtt.service.js');
+const Thing = require('../models/thing.model.js'),
+  mqttService = require('../../providers/mqtt/mqtt.service.js');
 
-const processRequest = function (thingId, request) {
-  console.log(`processRequest for light ${thingId}/request`);
+const _cachedMqttRequests = {};
 
-/*
-
-{
-  command: 'power_on',
-}
-
-{
-  command: 'power_off',
-}
-
-{
-  command: 'power_on',
-  parameters: {
-    status: 1
-  }
-}
-
-*/
-
-  const requestJSON = {
-    command: 'light_on',
-    parameters: {
-      intensity: 1,
-      color: '0.1, 0.8, 0.8'
-    }
-  }
-  mqttService.publish(thingId, 'request', JSON.stringify(requestJSON));
+const processRequest = function (thing, request, successCallback, errorCallback) {
+  console.log(`processRequest for light ${thing.id}/request`);
+  if (_arePropertiesAlreadyLoaded(thing, request)) {
+    successCallback();
+  } else {
+    const stringifiedRequest = JSON.stringify(request);
+    _cacheRequestFlow(thing.id, stringifiedRequest, successCallback, errorCallback);
+    mqttService.publish(thing.id, 'request', stringifiedRequest);
+  };
 };
 
 const processStatus = function (thingId, message) {
@@ -40,6 +22,9 @@ const processAnswer = function (thingId, message) {
   console.log(`processAnswer for light ${thingId}/answer`);
   let parsedMessage = _parseMessage(message);
   if (parsedMessage) {
+    // Proceed with stored http request flows
+    _loadRequestFlow(thingId, parsedMessage);
+    // Update DB with changes with the expected structure.
     let transcriptedData = _transcriptData(parsedMessage);
     console.log(`Store answer for light ${thingId}/answer`);
     Thing.update({ id: thingId }, {
@@ -82,6 +67,45 @@ const _transcriptData = function(data) {
     }
   });
   return transcriptedData;
+}
+
+const _cacheRequestFlow = function (thingId, stringifiedRequest, successCallback, errorCallback) {
+  const thingIdAndRequest = thingId + stringifiedRequest;
+  // Identify if there was a previous request, and if so, reject it.
+  const storedRequest = _cachedMqttRequests[thingIdAndRequest];
+  if (storedRequest) {
+    storedRequest.errorCallback();
+  }
+  // Cache the request flow
+  _cachedMqttRequests[thingIdAndRequest] = {
+    successCallback, errorCallback
+  };
+}
+
+const _loadRequestFlow = function (thingId, parsedMessage) {
+  // Identify the answer.
+  const messageBase = {
+    command: parsedMessage.command,
+    parameters: parsedMessage.parameters,
+  };
+  const thingIdAndRequest = thingId + JSON.stringify(messageBase);
+  const storedRequest = _cachedMqttRequests[thingIdAndRequest];
+  if (storedRequest) {
+    storedRequest.successCallback();
+    _cachedMqttRequests[thingIdAndRequest] = undefined;
+  }
+}
+
+const _arePropertiesAlreadyLoaded = function (storedThing, request) {
+  const allKeysAlreadyLoaded = true;
+  const storedProperties = storedThing.typeProperties;
+  const expectedProperties = _transcriptData(request);
+  Object.keys(expectedProperties).forEach(property => {
+    if (expectedProperties[property] !== storedProperties[property]  ) {
+      allKeysAlreadyLoaded = false;
+    }
+  });
+  return allKeysAlreadyLoaded;
 }
 
 const lightController = {

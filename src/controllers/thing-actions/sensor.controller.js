@@ -1,10 +1,10 @@
 const Thing = require('../../models/thing.model.js'),
   mqttService = require('../../providers/mqtt/mqtt.service.js');
 
-const processRequest = function (thingId, request) {
-  console.log(`processRequest for sensor ${thingId}/request`);
+const processRequest = function (thing, request) {
+  console.log(`processRequest for sensor ${thing.id}/request`);
   const requestJSON = request;
-  mqttService.publish(thingId, 'request', JSON.stringify(requestJSON));
+  mqttService.publish(thing.id, 'request', JSON.stringify(requestJSON));
 };
 
 const processStatus = function (thingId, message) {

@@ -55,12 +55,13 @@ const addThing = function (req, res) {
 
 //GET '/:id' - Return a thing with specified ID
 const getThingById = function (req, res) {
-  Thing.findOne({ id: req.params.id }, '-_id, -__v', function (err, thing) {
+  const thingId = req.params.id;
+  Thing.findOne({ id: thingId }, '-_id, -__v', function (err, thing) {
     if (err) {
-      console.log('FAILED GET getThingById ' + req.params.id);
+      console.log('FAILED GET getThingById ' + thingId);
       res.status(500).send(err.message);
     } else {
-      console.log('SUCCESS GET getThingById ' + req.params.id);
+      console.log('SUCCESS GET getThingById ' + thingId);
       res.status(200).jsonp(thing);
     }
   });
@@ -68,26 +69,28 @@ const getThingById = function (req, res) {
 
 //DELETE '/:id' - Delete a thing with specified ID
 const deleteThing = function (req, res) {
-  Thing.deleteOne({ id: req.params.id }, function (err) {
+  const thingId = req.params.id;
+  Thing.deleteOne({ id: thingId }, function (err) {
     if (err) {
-      console.log('FAILED DELETE deleteThing ' + req.params.id);
+      console.log('FAILED DELETE deleteThing ' + thingId);
       res.status(500).send(err.message);
     } else {
-      console.log('SUCCESS DELETE deleteThing ' + req.params.id);
-      res.status(200).jsonp({message: 'Thing ' + req.params.id + ' deleted sucessfully'});
+      console.log('SUCCESS DELETE deleteThing ' + thingId);
+      res.status(200).jsonp({message: 'Thing ' + thingId + ' deleted sucessfully'});
     }
   });
 };
 
 //PUT '/rename/:id' - Rename a thing with specified ID
 const renameThing = function (req, res) {
-  Thing.update({ id: req.params.id }, { $set: { customName: req.body.newName } }, function (err) {
+  const thingId = req.params.id;
+  Thing.update({ id: thingId }, { $set: { customName: req.body.newName } }, function (err) {
     if (err) {
-      console.log('FAILED PUT renameThing ' + req.params.id);
+      console.log('FAILED PUT renameThing ' + thingId);
       res.status(500).send(err.message);
     } else {
-      console.log('SUCCESS PUT renameThing ' + req.params.id);
-      res.status(200).jsonp({message: 'Thing ' + req.params.id + ' renamed sucessfully'});
+      console.log('SUCCESS PUT renameThing ' + thingId);
+      res.status(200).jsonp({message: 'Thing ' + thingId + ' renamed sucessfully'});
     }
   })
 };
@@ -95,32 +98,32 @@ const renameThing = function (req, res) {
 //PUT '/command/:id' - Process a command for a thing with specified ID
 const processCommand = function (req, res) {
   const thingId = req.params.id;
-  const commandString = req.body.command;
-  const requestedValue = req.body.value;
+  const commandRequest = req.body;
 
+  // Identify the thing type
   Thing.findOne({ id: thingId }, '-_id, -__v', function (err, thing) {
     if (err) {
-      console.log('FAILED PUT processCommand Thing.findOne ' + req.params.id);
+      console.log('FAILED PUT processCommand Thing.findOne ' + thingId);
       res.status(500).send(err.message);
     } else {
+      // Launch action to thing
       const thingControllerInstance = thingHelper.getThingControllerInstance(thing.type);
-      thingControllerInstance && thingControllerInstance.processRequest(commandString, requestedValue);
-      console.log('SUCCESS PUT processCommand ' + req.params.id);
-      res.status(200).jsonp(thing);
+      thingControllerInstance && thingControllerInstance.processRequest(thing, commandRequest, function () {
+        // Depending on result, store the change
+        // Depending on result, answer the request
+        let commandAnswer = {
+          commandRequest: req.body,
+          answer: 'Command ' + thingId + ' processed sucessfully'
+        }
+        res.status(200).jsonp(commandAnswer);
+      }, function () {
+        console.log('FAILED PUT processCommand processRequest ' + thingId);
+        res.status(500).send('FAILED PUT processCommand processRequest ' + thingId);
+      });
     }
   });
-
-  // Identify what to do
-  const action = thingHelper.translateCommand(commandString, requestedValue);
-  // Launch action to thing
   
-  // Depending on result, store the change
-  // Depending on result, answer the request
-  let commandAnswer = {
-    commandRequest: req.body,
-    answer: 'Command ' + req.params.id + ' processed sucessfully'
-  }
-  res.status(200).jsonp(commandAnswer);
+
 };
 
 const thingController = {
