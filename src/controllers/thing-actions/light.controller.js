@@ -1,4 +1,4 @@
-const Thing = require('../models/thing.model.js'),
+const Thing = require('../../models/thing.model.js'),
   mqttService = require('../../providers/mqtt/mqtt.service.js');
 
 const _cachedMqttRequests = {};
