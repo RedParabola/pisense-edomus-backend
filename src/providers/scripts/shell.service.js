@@ -9,10 +9,11 @@ const compileAndUploadToBoard = function (thingId, thingModel, boardModelId, boa
       console.log('Success execution of sketchgenerator ended');
       callback();
     } else if (data.indexOf('Error') !== -1) {
+      console.log('Failed execution of sketchgenerator. STDOUT detected error');
       callback(data);
     }
   }, function(error) {
-    console.log('Failed execution of sketchgenerator ended');
+    console.log('Failed execution of sketchgenerator. STDERR failure');
     callback(error);
   });
 }

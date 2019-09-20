@@ -6,7 +6,7 @@ const ROUTER_CONFIG = require('../../config/router.config.js'),
       linkRouter = require('./link.router.js'),
       measureRouter = require('./measure.router.js');
 
-function _setupRouting(express, app) {
+function _setupRouting(app) {
   app.use(ROUTER_CONFIG.EP_GLOBAL.USER, userRouter);
   app.use(ROUTER_CONFIG.EP_GLOBAL.THINGS, thingRouter);
   app.use(ROUTER_CONFIG.EP_GLOBAL.BOARDS, boardRouter);

@@ -1,8 +1,3 @@
-const translateCommand = function (commandString, requestedValue) {
-  const action = {};
-  return action;
-};
-
 const getThingControllerInstance = function(thingType) {
   thingType = thingType.toLowerCase();
   const ThingControllerInstance = require(`../controllers/thing-actions/${thingType}.controller.js`);
@@ -166,7 +161,6 @@ const getMQ135AvgInfo = function(mq135Sensors) {
 }
 
 const thingHelper = {
-  translateCommand,
   getThingControllerInstance,
   generateSubscriptionData,
   getModelStructure,

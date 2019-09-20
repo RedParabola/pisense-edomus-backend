@@ -45,6 +45,6 @@ mongodb.connect(function() {
 usbService.initListening();
 
 // Router
-router.setupRouting(express, app);
+router.setupRouting(app);
 
 module.exports = app;

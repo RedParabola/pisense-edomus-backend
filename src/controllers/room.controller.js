@@ -23,7 +23,7 @@ const roomDaemon = function () {
             let dht11AvgInfo = thingHelper.getDHT11AvgInfo(dht11Sensors);
             let mq135AvgInfo = thingHelper.getMQ135AvgInfo(mq135Sensors);
             let sensorMeasures = Object.assign(
-              room.sensorMeasures || {},
+              {},
               dht11AvgInfo,
               mq135AvgInfo,
             );

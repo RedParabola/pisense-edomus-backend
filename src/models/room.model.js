@@ -14,8 +14,6 @@ const RoomSchema = mongoose.Schema({
                     required: true },
   mainThingsId:   { type: mongoose.Schema.Types.Mixed,
                     required: true },
-  temperature:    { type: Number },
-  humidity:       { type: Number },
   sensorMeasures: { type: mongoose.Schema.Types.Mixed}
 });
 

@@ -2,13 +2,13 @@ var User = require('../models/user.model.js'),
     jwt = require('jsonwebtoken'),
     config = require('../../config/server.config.js');
 
-function createToken(user) {
+const _createToken = function (user) {
   return jwt.sign({ id: user.id, email: user.email }, config.JWT_SECRET, {
     expiresIn: config.TOKEN_EXPIRE_TIME
   });
 }
 
-exports.registerUser = (req, res) => {
+const registerUser = function (req, res) {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
@@ -38,7 +38,7 @@ exports.registerUser = (req, res) => {
   }
 };
 
-exports.loginUser = (req, res) => {
+const loginUser = function (req, res) {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
@@ -56,15 +56,20 @@ exports.loginUser = (req, res) => {
         user.comparePassword(password, (err, isMatch) => {
           if (isMatch && !err) {
             console.log('SUCCESS POST loginUser ' + email);
-            res.status(200).jsonp({email: email, token: createToken(user)});
+            res.status(200).jsonp({email: email, token: _createToken(user)});
           } else {
             console.log('FAILED POST loginUser ' + email);
             res.status(400).send({message: 'The email and password don\'t match.'});
           }
         });
       }
-
     });
   }
-
 };
+
+const userController = {
+  registerUser,
+  loginUser,
+};
+
+module.exports = userController;
